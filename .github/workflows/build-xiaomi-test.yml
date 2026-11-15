@@ -45,21 +45,30 @@ jobs:
           test -f "$ANDROID_NDK_HOME/source.properties"
           cd carjack-android
           gradle :slipstream:assembleDebug --stacktrace --no-daemon
-      - name: Inspect final merged APK permissions
+      - name: Verify signing, package, installable archive, and permissions
         run: |
           mkdir -p dist
           APK=$(find target/gradle -type f -path '*/outputs/apk/debug/*.apk' | head -n 1)
           if [ -z "$APK" ]; then echo 'APK missing' >&2; exit 1; fi
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" | tee dist/signing-report.txt
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -v 4 "$APK" | tail -n 5
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | head -n 12 | tee dist/package-report.txt
+          grep -F "name='io.github.roespelfcmd.slipstreamtest'" dist/package-report.txt
+          grep -F "versionCode='31'" dist/package-report.txt
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump xmltree "$APK" AndroidManifest.xml > dist/manifest-tree.txt
+          grep -F 'io.github.roespelfcmd.slipstreamtest.logs' dist/manifest-tree.txt
+          grep -F 'io.github.roespelfcmd.slipstreamtest.shizuku' dist/manifest-tree.txt
+          if grep -E 'io.github.cfraz89.slipstream.(logs|shizuku)' dist/manifest-tree.txt; then echo 'Provider collision with original app' >&2; exit 1; fi
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump permissions "$APK" | tee dist/permissions.txt
           if grep -E 'READ_MEDIA_IMAGES|ACCESS_COARSE_LOCATION|BIND_NOTIFICATION_LISTENER_SERVICE' dist/permissions.txt; then
             echo 'Unexpected optional permission retained in test APK; review required.' >&2
             exit 1
           fi
-          cp "$APK" dist/Slipstream-Xiaomi17-Test-0.3.0.apk
+          cp "$APK" dist/Slipstream-Xiaomi17-Standalone-0.3.1.apk
           sha256sum dist/Slipstream-Xiaomi17-Test-0.3.0.apk | tee dist/SHA256SUMS.txt
       - name: Upload APK and permission report
         uses: actions/upload-artifact@v4
         with:
-          name: Slipstream-Xiaomi17-Test-APK
+          name: Slipstream-Xiaomi17-Standalone-APK
           path: dist/
           if-no-files-found: error

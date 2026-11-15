@@ -30,11 +30,11 @@ android {
     compileSdk { version = release(36) { minorApiLevel = 1 } }
     ndkVersion = "29.0.14206865"
     defaultConfig {
-        applicationId = "io.github.cfraz89.slipstream"
+        applicationId = "io.github.roespelfcmd.slipstreamtest"
         minSdk = 33
         targetSdk = 36
-        versionCode = 3
-        versionName = "0.3.0"
+        versionCode = 31
+        versionName = "0.3.1-xiaomi-test"
         ndk.abiFilters += "arm64-v8a"
     }
     buildFeatures {

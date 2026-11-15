@@ -36,7 +36,7 @@
 
     <application
         android:name=".SlipstreamApplication"
-        android:label="Slipstream"
+        android:label="Slipstream Xiaomi Test"
         android:theme="@style/SlipstreamApp"
         android:icon="@mipmap/ic_sl_launcher"
         android:roundIcon="@mipmap/ic_sl_launcher"
@@ -98,7 +98,7 @@
         <activity-alias
             android:name="io.github.cfraz89.slipstream.LauncherOnPhone"
             android:targetActivity="io.github.cfraz89.slipstream.launcher.HomeActivity"
-            android:label="Slipstream Launcher"
+            android:label="Slipstream Xiaomi Launcher"
             android:icon="@mipmap/ic_sl_launcher"
             android:exported="true">
             <intent-filter>
@@ -127,7 +127,7 @@
         <service
             android:name=".SlipstreamTile"
             android:exported="true"
-            android:label="Slipstream"
+            android:label="Slipstream Xiaomi Test"
             android:icon="@drawable/ic_sl_notify"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
@@ -142,14 +142,14 @@
         <!-- Log bundles, readable only by the app each is shared with. -->
         <provider
             android:name=".LogsProvider"
-            android:authorities="io.github.cfraz89.slipstream.logs"
+            android:authorities="${applicationId}.logs"
             android:exported="false"
             android:grantUriPermissions="true" />
 
         <!-- Shizuku's handshake: how its server hands Slipstream a binder. -->
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
-            android:authorities="io.github.cfraz89.slipstream.shizuku"
+            android:authorities="${applicationId}.shizuku"
             android:enabled="true"
             android:exported="true"
             android:multiprocess="false"
