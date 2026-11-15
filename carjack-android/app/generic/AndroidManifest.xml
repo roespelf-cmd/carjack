@@ -21,10 +21,6 @@
     <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES"
         android:usesPermissionFlags="neverForLocation" />
     <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
-    <!-- What the wallpaper service asks of an app reading the phone's wallpaper. -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <!-- Roughly where the phone is, for the weather. -->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <!-- The apps the head unit can be given, for the picker and the launcher; and the home app. -->
     <queries>
@@ -142,15 +138,6 @@
                 android:value="true" />
         </service>
 
-        <!-- Lets the launcher see what other apps are playing; enabled through Shizuku. -->
-        <service
-            android:name="io.github.cfraz89.slipstream.launcher.MediaListener"
-            android:exported="true"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
-            <intent-filter>
-                <action android:name="android.service.notification.NotificationListenerService" />
-            </intent-filter>
-        </service>
 
         <!-- Log bundles, readable only by the app each is shared with. -->
         <provider
