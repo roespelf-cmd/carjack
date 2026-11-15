@@ -47,6 +47,7 @@ jobs:
           gradle :slipstream:assembleDebug --stacktrace --no-daemon
       - name: Verify signing, package, installable archive, and permissions
         run: |
+          set -euo pipefail
           mkdir -p dist
           APK=$(find target/gradle -type f -path '*/outputs/apk/debug/*.apk' | head -n 1)
           if [ -z "$APK" ]; then echo 'APK missing' >&2; exit 1; fi
@@ -65,7 +66,7 @@ jobs:
             exit 1
           fi
           cp "$APK" dist/Slipstream-Xiaomi17-Standalone-0.3.1.apk
-          sha256sum dist/Slipstream-Xiaomi17-Test-0.3.0.apk | tee dist/SHA256SUMS.txt
+          sha256sum dist/Slipstream-Xiaomi17-Standalone-0.3.1.apk | tee dist/SHA256SUMS.txt
       - name: Upload APK and permission report
         uses: actions/upload-artifact@v4
         with:
