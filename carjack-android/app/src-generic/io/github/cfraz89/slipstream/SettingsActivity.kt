@@ -1,11 +1,9 @@
 package io.github.cfraz89.slipstream
 
 import android.Manifest
-import android.app.NotificationManager
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.ActivityNotFoundException
-import android.content.ComponentName
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -68,14 +66,8 @@ class SettingsActivity : ComponentActivity() {
             Manifest.permission.BLUETOOTH_ADVERTISE,
             Manifest.permission.NEARBY_WIFI_DEVICES,
             Manifest.permission.POST_NOTIFICATIONS,
-            // The phone's wallpaper, for the launcher on the head unit.
-            Manifest.permission.READ_MEDIA_IMAGES,
         )
 
-        /** Granted with the rest through Shizuku, but nothing waits on it: the weather. */
-        private val OPTIONAL_PERMISSIONS = arrayOf(
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-        )
     }
 
     private enum class Dialog { LOGS }
@@ -94,7 +86,6 @@ class SettingsActivity : ComponentActivity() {
     private var revision by mutableIntStateOf(0)
     private var dialog by mutableStateOf<Dialog?>(null)
     private var settingUp = false
-    private var optionalTried = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -417,19 +408,11 @@ class SettingsActivity : ComponentActivity() {
     /** With Shizuku: grant what's missing and switch Bluetooth on, unasked. */
     private fun autoSetUp() {
         val grant = !permissionsGranted()
-        // Tried once a visit: refresh() follows, and one refused mustn't loop.
-        // The launcher's now-playing panel needs a notification listener to see media sessions.
-        val media = ComponentName(this, "io.github.cfraz89.slipstream.launcher.MediaListener")
-        val listener = !getSystemService(NotificationManager::class.java)
-            .isNotificationListenerAccessGranted(media)
-        val optional = !optionalTried && (!granted(OPTIONAL_PERMISSIONS) || listener)
         val bluetooth = !bluetoothOn()
-        if (settingUp || !(grant || optional || bluetooth) || !ShizukuDisplay.available()) return
+        if (settingUp || !(grant || bluetooth) || !ShizukuDisplay.available()) return
         settingUp = true
-        optionalTried = true
         Thread({
-            ShizukuDisplay.setUp(packageName, PERMISSIONS + OPTIONAL_PERMISSIONS, bluetooth,
-                if (listener) media.flattenToString() else null)
+            ShizukuDisplay.setUp(packageName, PERMISSIONS, bluetooth, null)
             runOnUiThread {
                 settingUp = false
                 refresh()
