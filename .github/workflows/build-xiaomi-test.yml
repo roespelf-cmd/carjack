@@ -1,0 +1,62 @@
+name: Build Slipstream Xiaomi Test APK
+on:
+  push:
+    branches: [test/slipstream-xiaomi17]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout fork test branch
+        uses: actions/checkout@v4
+      - name: Install native prerequisites
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends cmake pkg-config clang libclang-dev perl build-essential
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install Android SDK and NDK for upstream build
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager 'platforms;android-36.1' 'build-tools;36.0.0' 'ndk;29.0.14206865' 'platform-tools'
+      - name: Rust and Android cross-compiler
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk --version 4.1.2 --locked
+      - name: Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.9.1'
+      - name: Compile ARM64 test APK (debug signed)
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/29.0.14206865
+          ANDROID_NDK_ROOT: ${{ env.ANDROID_HOME }}/ndk/29.0.14206865
+        run: |
+          cd carjack-android
+          gradle :slipstream:assembleDebug --stacktrace --no-daemon
+      - name: Inspect final merged APK permissions
+        run: |
+          mkdir -p dist
+          APK=$(find target/gradle -type f -path '*/outputs/apk/debug/*.apk' | head -n 1)
+          if [ -z "$APK" ]; then echo 'APK missing' >&2; exit 1; fi
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump permissions "$APK" | tee dist/permissions.txt
+          if grep -E 'READ_MEDIA_IMAGES|ACCESS_COARSE_LOCATION|BIND_NOTIFICATION_LISTENER_SERVICE' dist/permissions.txt; then
+            echo 'Unexpected optional permission retained in test APK; review required.' >&2
+            exit 1
+          fi
+          cp "$APK" dist/Slipstream-Xiaomi17-Test-0.3.0.apk
+          sha256sum dist/Slipstream-Xiaomi17-Test-0.3.0.apk | tee dist/SHA256SUMS.txt
+      - name: Upload APK and permission report
+        uses: actions/upload-artifact@v4
+        with:
+          name: Slipstream-Xiaomi17-Test-APK
+          path: dist/
+          if-no-files-found: error
