@@ -39,10 +39,10 @@ jobs:
         with:
           gradle-version: '9.9.1'
       - name: Compile ARM64 test APK (debug signed)
-        env:
-          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/29.0.14206865
-          ANDROID_NDK_ROOT: ${{ env.ANDROID_HOME }}/ndk/29.0.14206865
         run: |
+          export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/29.0.14206865"
+          export ANDROID_NDK_ROOT="$ANDROID_NDK_HOME"
+          test -f "$ANDROID_NDK_HOME/source.properties"
           cd carjack-android
           gradle :slipstream:assembleDebug --stacktrace --no-daemon
       - name: Inspect final merged APK permissions
