@@ -38,7 +38,7 @@ object SetupHelp {
     val permissions = Help(
         "Permissions",
         "Bluetooth and nearby devices to find and talk to the head unit, and to join its Wi-Fi; " +
-            "notifications for Slipstream's status; photos for the launcher's wallpaper.",
+            "notifications for Slipstream's connection status.",
         listOf(
             "Tap Allow, and allow each one Android asks about.",
             "If one was refused before, allow it in Settings → Apps → Slipstream → Permissions.",
