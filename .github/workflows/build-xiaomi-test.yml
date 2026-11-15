@@ -24,8 +24,10 @@ jobs:
           test -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" || command -v sdkmanager
       - name: Install Android SDK and NDK for upstream build
         run: |
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager 'platforms;android-36.1' 'build-tools;36.0.0' 'ndk;29.0.14206865' 'platform-tools'
+          SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" 'platforms;android-36.1' 'build-tools;36.0.0' 'ndk;29.0.14206865' 'platform-tools'
       - name: Rust and Android cross-compiler
         uses: dtolnay/rust-toolchain@stable
         with:
