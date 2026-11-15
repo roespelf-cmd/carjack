@@ -1,0 +1,31 @@
+name: Publish standalone Xiaomi APK download
+on:
+  push:
+    branches: [test/slipstream-xiaomi17]
+    paths: [.github/workflows/publish-xiaomi-apk.yml]
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download previously verified APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p dist
+          gh run download 43741163720 --repo "$GITHUB_REPOSITORY" --name Slipstream-Xiaomi17-Standalone-APK --dir dist
+          test -s dist/Slipstream-Xiaomi17-Standalone-0.3.1.apk
+          echo '48ffa0fb90ebc4e0e9249c8c4997aca9809f54412e20784a539e033d66250ba3  dist/Slipstream-Xiaomi17-Standalone-0.3.1.apk' | sha256sum -c -
+      - name: Publish experimental build on GitHub Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create slipstream-xiaomi17-0.3.1 dist/Slipstream-Xiaomi17-Standalone-0.3.1.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --target f203f0a5413b9d3a7f4824b376607d1d852c12a1 \
+            --title 'Slipstream Xiaomi 17 Pro - standalone 0.3.1 test' \
+            --notes 'Experimental Android 16 ARM64 APK. Independently signed; Play Protect may block installation. Do not disable device security. Does not modify the Toyota. SHA256: 48ffa0fb90ebc4e0e9249c8c4997aca9809f54412e20784a539e033d66250ba3' \
+            --prerelease
